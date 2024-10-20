@@ -78,6 +78,7 @@ mod builder;
 mod filter;
 
 pub use builder::Builder;
+pub use reqwest;
 use reqwest::header::{HeaderMap, HeaderValue, IntoHeaderName};
 use reqwest::Client;
 
@@ -109,6 +110,27 @@ impl Postgrest {
             headers: HeaderMap::new(),
             client: Client::new(),
         }
+    }
+
+    /// Authenticates the request with JWT.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use postgrest::Postgrest;
+    ///
+    /// let client = Postgrest::new("https://your.postgrest.endpoint").auth("jwt");
+    /// client.from("table");
+    /// ```
+    pub fn auth<T>(mut self, token: T) -> Self
+    where
+        T: AsRef<str>,
+    {
+        self.headers.insert(
+            "Authorization",
+            HeaderValue::from_str(&format!("Bearer {}", token.as_ref())).unwrap(),
+        );
+        self
     }
 
     /// Switches the schema.

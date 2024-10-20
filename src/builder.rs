@@ -7,12 +7,12 @@ use reqwest::{
 /// QueryBuilder struct
 #[derive(Clone, Debug)]
 pub struct Builder {
-    method: Method,
-    url: String,
-    schema: Option<String>,
+    pub method: Method,
+    pub url: String,
+    pub schema: Option<String>,
     // Need this to allow access from `filter.rs`
-    pub(crate) queries: Vec<(String, String)>,
-    headers: HeaderMap,
+    pub queries: Vec<(String, String)>,
+    pub headers: HeaderMap,
     body: Option<String>,
     is_rpc: bool,
     // sharing a client is a good idea, performance wise
