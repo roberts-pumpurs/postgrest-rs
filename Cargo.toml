@@ -1,10 +1,13 @@
 [package]
-name = "postgrest"
+name = "rp-postgrest"
 version = "1.6.0"
-authors = ["Bobbie Soedirgo <bobbie@soedirgo.dev>"]
+authors = [
+  "Bobbie Soedirgo <bobbie@soedirgo.dev>",
+  "Roberts Pumpurs <roberts@pumpurlabs.com>",
+]
 description = "PostgREST client-side library"
-homepage = "https://github.com/supabase/postgrest-rs"
-repository = "https://github.com/supabase/postgrest-rs"
+homepage = "https://github.com/roberts-pumpurs/postgrest-rs"
+repository = "https://github.com/roberts-pumpurs/postgrest-rs"
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
 keywords = ["postgres", "postgrest", "rest", "api"]
