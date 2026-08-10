@@ -1,8 +1,10 @@
-pub use reqwest::Error;
 use reqwest::{
     header::{HeaderMap, HeaderValue},
-    Client, Method, Response,
+    Client, Error, Method, Response,
 };
+use rp_postgrest_error::PostgrestError;
+
+use crate::{ExecuteError, ResponseMetadata};
 
 /// QueryBuilder struct
 #[derive(Clone, Debug)]
@@ -574,9 +576,45 @@ impl Builder {
             .body(self.body.unwrap_or_default())
     }
 
-    /// Executes the PostgREST request.
+    /// Executes the PostgREST request without interpreting its HTTP status.
+    ///
+    /// Use [`Self::execute_checked`] to return structured PostgREST errors for
+    /// non-success responses.
     pub async fn execute(self) -> Result<Response, Error> {
         self.build().send().await
+    }
+
+    /// Executes the request and decodes non-success PostgREST responses.
+    ///
+    /// Successful responses are returned untouched so their bodies can still
+    /// be streamed. A non-success response body is consumed and returned as a
+    /// structured [`PostgrestError`] or a lossless decode failure through
+    /// [`ExecuteError`]. Every response failure retains its status, headers,
+    /// and effective URL in [`ResponseMetadata`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ExecuteError::Request`] when the request cannot be completed,
+    /// [`ExecuteError::ResponseBody`] when a non-success response body cannot
+    /// be read, [`ExecuteError::Postgrest`] for a structured PostgREST error,
+    /// or [`ExecuteError::Decode`] when the error body is malformed.
+    pub async fn execute_checked(self) -> Result<Response, ExecuteError> {
+        let response = self.execute().await.map_err(ExecuteError::Request)?;
+        if response.status().is_success() {
+            return Ok(response);
+        }
+
+        let metadata = ResponseMetadata::from_response(&response);
+        let status = metadata.status();
+        let body = match response.bytes().await {
+            Ok(body) => body,
+            Err(source) => return Err(ExecuteError::ResponseBody { metadata, source }),
+        };
+
+        match PostgrestError::from_vec(status, body.to_vec()) {
+            Ok(source) => Err(ExecuteError::Postgrest { metadata, source }),
+            Err(source) => Err(ExecuteError::Decode { metadata, source }),
+        }
     }
 }
 

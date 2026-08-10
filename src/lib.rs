@@ -16,14 +16,16 @@
 //! let resp = client
 //!     .from("your_table")
 //!     .select("*")
-//!     .execute()
+//!     .execute_checked()
 //!     .await?;
-//! let body = resp
-//!     .text()
-//!     .await?;
+//! let body = resp.text().await?;
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! [`Builder::execute_checked`] returns successful responses untouched and
+//! decodes non-success responses into [`ExecuteError`]. Use [`Builder::execute`]
+//! when the raw response is required regardless of HTTP status.
 //!
 //! Using filters:
 //! ```
@@ -75,12 +77,15 @@
 //! [readme]: https://github.com/supabase/postgrest-rs
 
 mod builder;
+mod error;
 mod filter;
 
 pub use builder::Builder;
+pub use error::{ExecuteError, ResponseMetadata};
 pub use reqwest;
 use reqwest::header::{HeaderMap, HeaderValue, IntoHeaderName};
 use reqwest::Client;
+pub use rp_postgrest_error::{self, DecodeError, PostgrestError};
 
 #[derive(Clone, Debug)]
 pub struct Postgrest {

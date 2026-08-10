@@ -1,6 +1,6 @@
 [package]
 name = "rp-postgrest"
-version = "2.0.0"
+version = "2.1.0"
 authors = [
   "Bobbie Soedirgo <bobbie@soedirgo.dev>",
   "Roberts Pumpurs <roberts@pumpurlabs.com>",
@@ -19,6 +19,7 @@ name = "postgrest"
 
 [dependencies]
 reqwest = { version = "0.13", default-features = false, features = ["query"] }
+rp-postgrest-error = "0.4"
 
 [dev-dependencies]
 json = "0.12"

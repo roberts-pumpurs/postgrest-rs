@@ -13,7 +13,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-postgrest = "1.0"
+rp-postgrest = "2"
 ```
 
 Simple example:
@@ -25,12 +25,50 @@ let client = Postgrest::new("https://your.postgrest.endpoint");
 let resp = client
     .from("your_table")
     .select("*")
-    .execute()
+    .execute_checked()
     .await?;
-let body = resp
-    .text()
-    .await?;
+let body = resp.text().await?;
 ```
+
+`execute_checked()` returns successful responses untouched and decodes unsuccessful
+responses with [`rp-postgrest-error`](https://crates.io/crates/rp-postgrest-error):
+
+```rust
+use postgrest::{ExecuteError, Postgrest};
+
+let result = Postgrest::new("https://your.postgrest.endpoint")
+    .from("missing_table")
+    .select("*")
+    .execute_checked()
+    .await;
+
+match result {
+    Ok(response) => println!("{}", response.text().await?),
+    Err(ExecuteError::Postgrest { metadata, source }) => {
+        eprintln!(
+            "{} {} [{}]: {}",
+            metadata.status(),
+            metadata.url(),
+            source.code(),
+            source.response().message,
+        );
+        eprintln!("request id: {:?}", metadata.headers().get("x-request-id"));
+    }
+    Err(ExecuteError::Decode { metadata, source }) => {
+        eprintln!(
+            "unexpected error body from {} at {}: {:?}",
+            metadata.url(),
+            metadata.status(),
+            source.body(),
+        );
+    }
+    Err(error) => return Err(error.into()),
+}
+```
+
+All checked response failures retain their status, headers, and effective URL.
+Use `execute()` instead when you need the complete raw response regardless of HTTP
+status.
 
 Simple example with JWT auth
 
