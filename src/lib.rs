@@ -91,7 +91,10 @@ pub struct Postgrest {
 }
 
 impl Postgrest {
-    /// Creates a Postgrest client.
+    /// Creates a Postgrest client using Reqwest's default client configuration.
+    ///
+    /// Use [`Postgrest::new_with_client`] when the application requires explicit
+    /// timeout, proxy, TLS, or connection-pooling policy.
     ///
     /// # Example
     ///
@@ -104,11 +107,40 @@ impl Postgrest {
     where
         T: Into<String>,
     {
-        Postgrest {
+        Self::new_with_client(url, Client::new())
+    }
+
+    /// Creates a Postgrest client using a caller-provided Reqwest client.
+    ///
+    /// This constructor lets applications configure deadlines, proxies, TLS,
+    /// connection pooling, and other HTTP client policy once. Cloned
+    /// [`Postgrest`] values and the query builders they create share Reqwest's
+    /// underlying connection pool.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::time::Duration;
+    ///
+    /// # fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = postgrest::reqwest::Client::builder()
+    ///     .timeout(Duration::from_secs(30))
+    ///     .build()?;
+    ///
+    /// let postgrest =
+    ///     postgrest::Postgrest::new_with_client("https://example.test/rest/v1", client);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn new_with_client<T>(url: T, client: Client) -> Self
+    where
+        T: Into<String>,
+    {
+        Self {
             url: url.into(),
             schema: None,
             headers: HeaderMap::new(),
-            client: Client::new(),
+            client,
         }
     }
 
