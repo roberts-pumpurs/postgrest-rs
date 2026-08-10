@@ -14,6 +14,9 @@ keywords = ["postgres", "postgrest", "rest", "api"]
 categories = ["development-tools"]
 edition = "2021"
 
+[lib]
+name = "postgrest"
+
 [dependencies]
 reqwest = { version = "0.13", default-features = false, features = ["query"] }
 

@@ -612,24 +612,18 @@ mod tests {
         let client = Client::new();
         let builder = Builder::new(TABLE_URL, None, HeaderMap::new(), client).select("some_table");
         assert_eq!(builder.method, Method::GET);
-        assert_eq!(
-            builder
-                .queries
-                .contains(&("select".to_string(), "some_table".to_string())),
-            true
-        );
+        assert!(builder
+            .queries
+            .contains(&("select".to_string(), "some_table".to_string())));
     }
 
     #[test]
     fn order_assert_query() {
         let client = Client::new();
         let builder = Builder::new(TABLE_URL, None, HeaderMap::new(), client).order("id");
-        assert_eq!(
-            builder
-                .queries
-                .contains(&("order".to_string(), "id".to_string())),
-            true
-        );
+        assert!(builder
+            .queries
+            .contains(&("order".to_string(), "id".to_string())));
     }
 
     #[test]
@@ -641,12 +635,9 @@ mod tests {
             true,
             false,
         );
-        assert_eq!(
-            builder
-                .queries
-                .contains(&("cities.order".to_string(), "name.asc.nullslast".to_string())),
-            true
-        );
+        assert!(builder
+            .queries
+            .contains(&("cities.order".to_string(), "name.asc.nullslast".to_string())));
     }
 
     #[test]
@@ -664,12 +655,9 @@ mod tests {
         let client = Client::new();
         let builder = Builder::new(TABLE_URL, None, HeaderMap::new(), client)
             .foreign_table_limit(20, "some_table");
-        assert_eq!(
-            builder
-                .queries
-                .contains(&("some_table.limit".to_string(), "20".to_string())),
-            true
-        );
+        assert!(builder
+            .queries
+            .contains(&("some_table.limit".to_string(), "20".to_string())));
     }
 
     #[test]
@@ -706,7 +694,7 @@ mod tests {
     fn not_rpc_should_not_have_flag() {
         let client = Client::new();
         let builder = Builder::new(TABLE_URL, None, HeaderMap::new(), client).select("ignored");
-        assert_eq!(builder.is_rpc, false);
+        assert!(!builder.is_rpc);
     }
 
     #[test]
@@ -715,7 +703,7 @@ mod tests {
         let builder =
             Builder::new(RPC_URL, None, HeaderMap::new(), client).rpc("{\"a\": 1, \"b\": 2}");
         assert_eq!(builder.body.unwrap(), "{\"a\": 1, \"b\": 2}");
-        assert_eq!(builder.is_rpc, true);
+        assert!(builder.is_rpc);
     }
 
     #[test]
